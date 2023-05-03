@@ -1,2 +1,3 @@
 ﻿  Entry.cpp
+D:\OpenGL\WinShell\WinShell\shader.h(4,10): warning C4067: 预处理器指令后有意外标记 - 应输入换行符
   WinShell.vcxproj -> D:\OpenGL\WinShell\x64\Debug\WinShell.exe

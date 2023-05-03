@@ -16,12 +16,18 @@
     <Filter Include="库文件">
       <UniqueIdentifier>{d331a0ff-ad6e-48bc-8a33-70fe0bffef0a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\shaders">
+      <UniqueIdentifier>{d011a864-d1c6-4621-a89d-fa638faa3886}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Entry.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="shader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -38,15 +44,26 @@
     <ClInclude Include="..\lib-glfw\include\KHR\khrplatform.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="shader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\lib-glfw\lib\glfw3.pdb">
       <Filter>库文件</Filter>
+    </None>
+    <None Include="shader.vs">
+      <Filter>源文件\shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\lib-glfw\lib\glfw3.lib">
       <Filter>库文件</Filter>
     </Library>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="shader.fs">
+      <Filter>源文件\shaders</Filter>
+    </Text>
   </ItemGroup>
 </Project>
