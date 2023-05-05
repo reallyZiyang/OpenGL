@@ -142,6 +142,7 @@
     <ClInclude Include="..\lib-glfw\include\glfw3native.h" />
     <ClInclude Include="..\lib-glfw\include\KHR\khrplatform.h" />
     <ClInclude Include="shader.h" />
+    <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\lib-glfw\lib\glfw3.lib" />
@@ -152,6 +153,9 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="shader.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="container.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

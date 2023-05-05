@@ -19,6 +19,9 @@
     <Filter Include="源文件\shaders">
       <UniqueIdentifier>{d011a864-d1c6-4621-a89d-fa638faa3886}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\textures">
+      <UniqueIdentifier>{4c5f1cfd-55d4-4fd3-955e-11af9179340d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -47,6 +50,9 @@
     <ClInclude Include="shader.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\lib-glfw\lib\glfw3.pdb">
@@ -65,5 +71,10 @@
     <Text Include="shader.fs">
       <Filter>源文件\shaders</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="container.jpg">
+      <Filter>源文件\textures</Filter>
+    </Image>
   </ItemGroup>
 </Project>
