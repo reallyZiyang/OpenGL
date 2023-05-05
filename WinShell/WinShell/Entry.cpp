@@ -12,6 +12,7 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
 unsigned defaultShaderProgram;
+float mixValue = 0.5f;
 
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -45,18 +46,11 @@ int main()
 	//注册窗口大小改变时的回调
 	glfwSetFramebufferSizeCallback(window, frameBufferSizeCallback);
 
-	Shader ourShader("shader.vs", "shader.fs");
-	ourShader.use();
-	/*float color[4];
-	color[1] = 1;
-	color[3] = 1;
-	ourShader.setColor("uniformColor", color);*/
-
 	float vertices[] = {
 		// positions         // colors		//coord
-		 0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  1.0f, 0.0f,  // bottom right
 		-0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  0.0f, 0.0f,  // bottom left
-		-0.5f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  0.0f, 1.0f   // top 
+		 0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  2.0f, 0.0f,  // bottom right
+		 0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  1.0f, 2.0f   // top 
 
 	};
 
@@ -80,9 +74,10 @@ int main()
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(sizeof(float) * 6));
 	glEnableVertexAttribArray(2);
 
-	unsigned int texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	unsigned int texture1;
+	glGenTextures(1, &texture1);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture1);
 	//设置纹理的环绕方式
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -103,12 +98,48 @@ int main()
 	}
 	stbi_image_free(data);
 
+	//你可能注意到纹理上下颠倒了！这是因为OpenGL要求y轴0.0坐标是在图片的底部的，但是图片的y轴0.0坐标通常在顶部。很幸运，stb_image.h能够在图像加载时帮助我们翻转y轴，只需要在加载任何图像前加入以下语句即可
+	stbi_set_flip_vertically_on_load(true);
+	unsigned int texture2;
+	glGenTextures(1, &texture2);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+	//设置纹理的环绕方式
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//设置纹理的过滤方式，放大放小都使用线性过滤
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//加载纹理
+	data = stbi_load("awesomeface.png", &width, &height, &channel, 0);
+	if (data)
+	{
+		//png带透明通道
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "load texture fail!" << std::endl;
+	}
+	stbi_image_free(data);
+
+	Shader ourShader("shader.vs", "shader.fs");
+	ourShader.use();
+	ourShader.setInt("bgTexture", 0);
+	ourShader.setInt("fgTexture", 1);
+	/*float color[4];
+	color[1] = 1;
+	color[3] = 1;
+	ourShader.setColor("uniformColor", color);*/
+
 	while (!glfwWindowShouldClose(window))
 	{
 		//输入
 		processInput(window);
 
 		//渲染
+		ourShader.setFloat("mixValue", mixValue);
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glBindVertexArray(VAO);
@@ -137,4 +168,15 @@ void processInput(GLFWwindow* window)
 		glfwSetWindowShouldClose(window, true);
 		return;
 	}
+
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	{
+		mixValue += 0.001f;
+	}
+	else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	{
+		mixValue -= 0.001f;
+	}
+	mixValue = mixValue > 1.0f ? 1.0f : mixValue;
+	mixValue = mixValue < 0.0f ? 0.0f : mixValue;
 }

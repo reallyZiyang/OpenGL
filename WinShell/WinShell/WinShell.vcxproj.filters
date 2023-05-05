@@ -76,5 +76,8 @@
     <Image Include="container.jpg">
       <Filter>源文件\textures</Filter>
     </Image>
+    <Image Include="awesomeface.png">
+      <Filter>源文件\textures</Filter>
+    </Image>
   </ItemGroup>
 </Project>
