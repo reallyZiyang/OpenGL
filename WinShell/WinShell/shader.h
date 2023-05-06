@@ -7,6 +7,10 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+using namespace glm;
 
 
 class Shader
@@ -24,6 +28,7 @@ public:
     void setInt(const std::string& name, int value) const;
     void setFloat(const std::string& name, float value) const;
     void setColor(const std::string& name, float value[4]) const;
+    void setMat4(const std::string& name, int count, bool transpose, mat4 trans) const;
 private:
     void checkCompileError(unsigned int shader, std::string type);
 };

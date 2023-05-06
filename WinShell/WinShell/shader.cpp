@@ -1,4 +1,5 @@
 #include "shader.h"
+using namespace glm;
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath)
 {
@@ -84,6 +85,12 @@ void Shader::setColor(const std::string& name, float value[4]) const
 {
     int location = glGetUniformLocation(ID, name.c_str());
     glUniform4f(location, value[0], value[1], value[2], value[3]);
+}
+
+void Shader::setMat4(const std::string& name, int count, bool transpose, mat4 trans) const
+{
+    int location = glGetUniformLocation(ID, name.c_str());
+    glUniformMatrix4fv(location, count, transpose ? GL_TRUE : GL_FALSE, value_ptr(trans));
 }
 
 void Shader::checkCompileError(unsigned int shader, std::string type)
