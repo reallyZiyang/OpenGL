@@ -51,11 +51,47 @@ int main()
 	glfwSetFramebufferSizeCallback(window, frameBufferSizeCallback);
 
 	float vertices[] = {
-		// positions          // texture coords
-		 0.5f,  0.5f, 0.0f,   1.0f, 1.0f, // top right
-		 0.5f, -0.5f, 0.0f,   1.0f, 0.0f, // bottom right
-		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, // bottom left
-		-0.5f,  0.5f, 0.0f,   0.0f, 1.0f  // top left 
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 	unsigned int indices[] = {
 		0, 1, 3, // first triangle
@@ -137,36 +173,64 @@ int main()
 	ourShader.use();
 	ourShader.setInt("bgTexture", 0);
 	ourShader.setInt("fgTexture", 1);
-	/*float color[4];
-	color[1] = 1;
-	color[3] = 1;
-	ourShader.setColor("uniformColor", color);*/
-	
+
+	//开启深度测试
+	glEnable(GL_DEPTH_TEST);
+
+	mat4 view;
+	view = translate(view, vec3(0.0, -0.5, -6.0));
+	view = rotate(view, radians(45.0f), vec3(1.0, 0.0, 0.0));
+	ourShader.setMat4("view", 1, false, view);
+
+	mat4 projection;
+	projection = perspective(radians(60.0f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
+	ourShader.setMat4("projection", 1, false, projection);
+
+	vec3 cubePositions[] = {
+		vec3(0.0f,  0.0f,  0.0f),
+		vec3(2.0f,  5.0f, -15.0f),
+		vec3(-1.5f, -2.2f, -2.5f),
+		vec3(-3.8f, -2.0f, -12.3f),
+		vec3(2.4f, -0.4f, -3.5f),
+		vec3(-1.7f,  3.0f, -7.5f),
+		vec3(1.3f, -2.0f, -2.5f),
+		vec3(1.5f,  2.0f, -2.5f),
+		vec3(1.5f,  0.2f, -1.5f),
+		vec3(-1.3f,  1.0f, -1.5f)
+	};
+
 	while (!glfwWindowShouldClose(window))
 	{
 		//输入
 		processInput(window);
 
-		mat4 trans;
-		trans = translate(trans, vec3(0.5, -0.5, 0.0));
-		trans = rotate(trans, (float)glfwGetTime(), vec3(0.0, 0.0, 1.0));
-		trans = scale(trans, vec3(0.5, 0.5, 0.5));
-		ourShader.setMat4("transform", 1, false, trans);
+
+		//mat4 trans;
+		//trans = translate(trans, vec3(0.5, -0.5, 0.0));
+		//trans = rotate(trans, (float)glfwGetTime(), vec3(0.0, 0.0, 1.0));
+		//trans = scale(trans, vec3(0.5, 0.5, 0.5));
+		//ourShader.setMat4("transform", 1, false, trans);
 
 		//渲染
 		ourShader.setFloat("mixValue", mixValue);
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glBindVertexArray(VAO);
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-		trans = mat4();
-		trans = translate(trans, vec3(-0.5, 0.5, 0.0));
-		trans = rotate(trans, (float)glfwGetTime(), vec3(0.0, 0.0, 1.0));
-		trans = scale(trans, vec3(0.5, 0.5, 0.5));
-		ourShader.setMat4("transform", 1, false, trans);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		mat4 transform;
+		//transform = rotate(transform, (float)glfwGetTime() * radians(90.0f), vec3(0.5f, 0.5f, 0.0f));
+		ourShader.setMat4("transform", 1, false, transform);
+
+		for (size_t i = 0; i < 10; i++)
+		{
+			mat4 model;
+			model = translate(model, cubePositions[i]);
+			model = rotate(model, (float)glfwGetTime() * radians(90.0f), vec3(0.5f, 0.5f, 0.0f));
+			ourShader.setMat4("model", 1, false, model);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		//交换缓冲区，检查事件
 		glfwSwapBuffers(window);
