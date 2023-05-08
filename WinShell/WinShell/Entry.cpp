@@ -18,7 +18,21 @@ const int SCREEN_HEIGHT = 600;
 unsigned defaultShaderProgram;
 float mixValue = 0.5f;
 
+vec3 cameraPos = vec3(0.0,0.0,6.0);
+vec3 cameraDir = vec3(0.0, 0.0, -1.0);
+vec3 cameraUp = vec3(0.0, 1.0, 0.0);
+float cameraSpeed = 4.0f;
+float deltaTime;
+float lastTime;
+double mouseX = SCREEN_WIDTH / 2, mouseY = SCREEN_HEIGHT / 2;
+float mouseSensity = 1.0f;
+float cameraYaw = -90.0f, cameraPitch = 0.0f;
+float cameraFov = 45.0f;
+bool firstEnter = true;
+
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
+void mouseInputCallback(GLFWwindow* window, double x, double y);
+void scrollInputCallback(GLFWwindow* window, double x, double y);
 void processInput(GLFWwindow* window);
 
 int main()
@@ -177,14 +191,16 @@ int main()
 	//开启深度测试
 	glEnable(GL_DEPTH_TEST);
 
-	mat4 view;
-	view = translate(view, vec3(0.0, -0.5, -6.0));
-	view = rotate(view, radians(45.0f), vec3(1.0, 0.0, 0.0));
-	ourShader.setMat4("view", 1, false, view);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//鼠标移动回调
+	glfwSetCursorPosCallback(window, mouseInputCallback);
+	//滚轮回调
+	glfwSetScrollCallback(window, scrollInputCallback);
 
-	mat4 projection;
-	projection = perspective(radians(60.0f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
-	ourShader.setMat4("projection", 1, false, projection);
+	//mat4 view;
+	//view = translate(view, vec3(0.0, -0.5, -6.0));
+	//view = rotate(view, radians(45.0f), vec3(1.0, 0.0, 0.0));
+	//ourShader.setMat4("view", 1, false, view);
 
 	vec3 cubePositions[] = {
 		vec3(0.0f,  0.0f,  0.0f),
@@ -201,9 +217,21 @@ int main()
 
 	while (!glfwWindowShouldClose(window))
 	{
+		deltaTime = glfwGetTime() - lastTime;
+		lastTime = glfwGetTime();
 		//输入
 		processInput(window);
 
+		mat4 projection;
+		projection = perspective(radians(cameraFov), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
+		ourShader.setMat4("projection", 1, false, projection);
+
+		mat4 view;
+		//float radius = 10.0f;
+		//float camX = sin(glfwGetTime()) * radius;
+		//float camZ = cos(glfwGetTime()) * radius;
+		view = lookAt(cameraPos, cameraPos + cameraDir, cameraUp);
+		ourShader.setMat4("view", 1, false, view);
 
 		//mat4 trans;
 		//trans = translate(trans, vec3(0.5, -0.5, 0.0));
@@ -216,7 +244,7 @@ int main()
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glBindVertexArray(VAO);
-
+		
 		mat4 transform;
 		//transform = rotate(transform, (float)glfwGetTime() * radians(90.0f), vec3(0.5f, 0.5f, 0.0f));
 		ourShader.setMat4("transform", 1, false, transform);
@@ -252,6 +280,47 @@ void frameBufferSizeCallback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
+void mouseInputCallback(GLFWwindow* window, double x, double y)
+{
+	if (firstEnter)
+	{
+		firstEnter = false;
+		mouseX = x;
+		mouseY = y;
+	}
+
+	double offsetX = (x - mouseX) / SCREEN_WIDTH * 360.0f;
+	double offsetY = (y - mouseY) / SCREEN_HEIGHT * 360.0f;
+	mouseX = x;
+	mouseY = y;
+	offsetX *= mouseSensity;
+	offsetY *= mouseSensity;
+
+	cameraPitch -= offsetY;
+	cameraYaw += offsetX;
+
+	if (cameraPitch >= 89.0f)
+		cameraPitch = 89.0f;
+	else if (cameraPitch <= -89.0f)
+		cameraPitch = -89.0f;
+
+	cameraDir = normalize(vec3(
+		cos(radians(cameraPitch)) * cos(radians(cameraYaw)),
+		sin(radians(cameraPitch)),
+		cos(radians(cameraPitch)) * sin(radians(cameraYaw))
+	));
+	
+}
+
+void scrollInputCallback(GLFWwindow* window, double x, double y)
+{
+	cameraFov -= y;
+	if (cameraFov < 1.0f)
+		cameraFov = 1.0f;
+	else if (cameraFov > 60.0f)
+		cameraFov = 60.0f;
+}
+
 void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -270,4 +339,22 @@ void processInput(GLFWwindow* window)
 	}
 	mixValue = mixValue > 1.0f ? 1.0f : mixValue;
 	mixValue = mixValue < 0.0f ? 0.0f : mixValue;
+
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	{
+		cameraPos += cameraDir * cameraSpeed * deltaTime;
+	}
+	else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	{
+		cameraPos -= cameraDir * cameraSpeed * deltaTime;
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	{
+		cameraPos += normalize(cross(cameraDir, cameraUp)) * cameraSpeed * deltaTime;
+	}
+	else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	{
+		cameraPos -= normalize(cross(cameraDir, cameraUp)) * cameraSpeed * deltaTime;
+	}
+
 }
