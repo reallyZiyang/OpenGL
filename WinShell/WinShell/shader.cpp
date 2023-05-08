@@ -87,6 +87,12 @@ void Shader::setColor(const std::string& name, float value[4]) const
     glUniform4f(location, value[0], value[1], value[2], value[3]);
 }
 
+void Shader::setVec3(const std::string& name, vec3 vec) const
+{
+    int location = glGetUniformLocation(ID, name.c_str());
+    glUniform3f(location, vec.x, vec.y, vec.z);
+}
+
 void Shader::setMat4(const std::string& name, int count, bool transpose, mat4 trans) const
 {
     int location = glGetUniformLocation(ID, name.c_str());
