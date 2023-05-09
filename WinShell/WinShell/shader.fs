@@ -1,35 +1,53 @@
 #version 330 core
+struct Light
+{
+    vec3 pos;
+    float intensity;
+    vec3 color;
+    float ambientStrength;
+    float diffuseStrength;
+    float specularStrength;
+};
+
+struct Material
+{
+    vec3 baseColor;//基础颜色
+    vec3 diffuseColor;//漫反射颜色
+    vec3 specularColor;//高光颜色
+    float shininess;//光滑程度
+};
+
 in vec3 fragmentPos;
 in vec3 fragmentNormal;
 
 out vec4 FragColor;
 
-uniform vec3 objColor;
-uniform vec3 lightColor;
-uniform vec3 lightPos;
 uniform vec3 viewPos;
+uniform Light light;
+uniform Material material;
 
 void main()
 {
     //1.环境光照
-    float ambientStrength = 0.15f;
-    vec3 ambientColor = ambientStrength * lightColor;
+    vec3 ambientColor = material.baseColor * light.color * light.ambientStrength;
 
     //2.漫反射
-    float diffussionStrength = 1.0f;
-    vec3 lightDir = normalize(lightPos - fragmentPos);
-    float diff = max(0.0f, dot(fragmentNormal, lightDir)) * diffussionStrength;
-    vec3 diffussionColor = diff * lightColor;
+    vec3 lightDir = normalize(light.pos - fragmentPos);
+    float diff = max(0.0f, dot(fragmentNormal, lightDir));
+    vec3 diffuseColor = diff * material.diffuseColor * light.color * light.diffuseStrength;
 
     //3.镜面反射
-    float specularStrength = 0.5f;
     vec3 viewDir = normalize(viewPos - fragmentPos);
     vec3 reflectDir = reflect(-lightDir, fragmentNormal);
     float spec = max(0.0f, dot(viewDir, reflectDir));
-    float shininess = pow(spec, 64) * specularStrength;//反光度，幂越大光越聚集
-    vec3 specularColor = shininess * lightColor;
+    float shininess = pow(spec, material.shininess);//反光度，幂越大光越聚集
+    vec3 specularColor = shininess * material.specularColor * light.color * light.specularStrength;
 
-    vec3 finalColor = (ambientColor + diffussionColor + specularColor) * objColor;
+    float dis = (light.pos.x - fragmentPos.x) * (light.pos.x - fragmentPos.x) + (light.pos.y - fragmentPos.y) * (light.pos.y - fragmentPos.y) + (light.pos.z - fragmentPos.z) * (light.pos.z - fragmentPos.z);
+    dis = max(0, dis);
+    dis = min(dis, light.intensity);
+    float value = 1 - dis / light.intensity;
+    vec3 finalColor = ambientColor + (diffuseColor + specularColor) * value;
     FragColor = vec4(finalColor, 1.0f);
 
 

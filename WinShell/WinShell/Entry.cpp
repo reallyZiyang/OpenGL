@@ -162,15 +162,43 @@ int main()
 		objShader.setMat4("projection", 1, false, projection);
 		objShader.setMat4("view", 1, false, camera.GetViewMatrix());
 		mat4 model;
-		model = rotate(model, radians(20.0f), vec3(1.0f, 1.0f, 1.0f));
-		model = translate(model, vec3(0, -1.0, 0));
+		model = translate(model, vec3(0, -1.5, 0));
+		model = rotate(model, radians(30.0f), vec3(1.0f, 1.0f, 1.0f));
+		model = scale(model, vec3(6.0f, 0.1f, 6.0f));
+		objShader.setMat4("model", 1, false, model);
+		objShader.setVec3("viewPos", camera.Position);
+		objShader.setVec3("light.pos", lightPos);
+		objShader.setFloat("light.intensity", 36.0f);
+		objShader.setVec3("light.color", vec3(1.0, 1.0, 1.0));
+		objShader.setFloat("light.ambientStrength", 0.2f);
+		objShader.setFloat("light.diffuseStrength", 1.0f);
+		objShader.setFloat("light.specularStrength", 0.1f);
+		objShader.setVec3("material.baseColor", vec3(0.0, 0.05, 0.0));
+		objShader.setVec3("material.diffuseColor", vec3(0.4, 0.5, 0.4));
+		objShader.setVec3("material.specularColor", vec3(0.04, 0.7, 0.04));
+		objShader.setFloat("material.shininess", 32);
+		glBindVertexArray(objVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		model = mat4();
+		model = translate(model, vec3(0, 1.0, -3.0));
+		model = rotate(model, radians(90.0f), vec3(1.0f, 0.0f, 0.0f));
 		model = scale(model, vec3(6.0f, 0.25f, 6.0f));
 		objShader.setMat4("model", 1, false, model);
-		objShader.setVec3("lightPos", lightPos);
-		objShader.setVec3("viewPos", camera.Position);
-		objShader.setVec3("objColor", vec3(1.0f, 0.5f, 0.31f));
-		objShader.setVec3("lightColor", vec3(1.0f, 1.0f, 1.0f));
-		glBindVertexArray(objVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		model = mat4();
+		model = translate(model, vec3(3, 0.0, 0.0));
+		model = rotate(model, radians(90.0f), vec3(0.0f, 0.0f, 1.0f));
+		model = scale(model, vec3(6.0f, 0.25f, 6.0f));
+		objShader.setMat4("model", 1, false, model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		model = mat4();
+		model = translate(model, vec3(-3, 0.0, 0.0));
+		model = rotate(model, radians(90.0f), vec3(0.0f, 0.0f, 1.0f));
+		model = scale(model, vec3(6.0f, 0.25f, 6.0f));
+		objShader.setMat4("model", 1, false, model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		lightShader.use();
