@@ -88,5 +88,8 @@
     <Image Include="container2.png">
       <Filter>源文件\textures</Filter>
     </Image>
+    <Image Include="container2_specular.png">
+      <Filter>源文件\textures</Filter>
+    </Image>
   </ItemGroup>
 </Project>
