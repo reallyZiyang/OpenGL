@@ -53,6 +53,9 @@
     <ClInclude Include="stb_image.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="camera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\lib-glfw\lib\glfw3.pdb">
@@ -71,12 +74,18 @@
     <Text Include="shader.fs">
       <Filter>源文件\shaders</Filter>
     </Text>
+    <Text Include="light.fs">
+      <Filter>源文件\shaders</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <Image Include="container.jpg">
       <Filter>源文件\textures</Filter>
     </Image>
     <Image Include="awesomeface.png">
+      <Filter>源文件\textures</Filter>
+    </Image>
+    <Image Include="container2.png">
       <Filter>源文件\textures</Filter>
     </Image>
   </ItemGroup>
