@@ -162,7 +162,7 @@ int main()
 		processInput(window);
 
 		//渲染
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		float radius = 1.5f;
@@ -181,12 +181,15 @@ int main()
 		model = scale(model, vec3(6.0f, 0.1f, 6.0f));
 		objShader.setMat4("model", 1, false, model);
 		objShader.setVec3("viewPos", camera.Position);
-		objShader.setVec3("light.pos", lightPos);
-		objShader.setFloat("light.intensity", 36.0f);
+		objShader.setVec3("light.pos", camera.Position);
+		objShader.setVec3("light.dir", camera.Front);
+		objShader.setFloat("light.cutoff", cos(radians(25.0f)));
+		objShader.setFloat("light.outCutoff", cos(radians(40.0f)));
+		//objShader.setVec3("light.dir", vec3(0.5,0,0));
 		objShader.setVec3("light.color", vec3(1.0, 1.0, 1.0));
-		objShader.setFloat("light.ambientStrength", 0.2f);
+		objShader.setFloat("light.ambientStrength", 0.1f);
 		objShader.setFloat("light.diffuseStrength", 1.0f);
-		objShader.setFloat("light.specularStrength", 2.0f);
+		objShader.setFloat("light.specularStrength", 3.0f);
 		objShader.setVec3("material.baseColor", vec3(1.0, 1.0, 1.0));
 		objShader.setVec3("material.diffuseColor", vec3(0.4, 0.5, 0.4));
 		objShader.setFloat("material.shininess", 64);
