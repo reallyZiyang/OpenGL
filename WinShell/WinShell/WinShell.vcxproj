@@ -134,6 +134,7 @@
   <ItemGroup>
     <ClCompile Include="Entry.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="Light.cpp" />
     <ClCompile Include="shader.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -142,6 +143,7 @@
     <ClInclude Include="..\lib-glfw\include\glfw3native.h" />
     <ClInclude Include="..\lib-glfw\include\KHR\khrplatform.h" />
     <ClInclude Include="camera.h" />
+    <ClInclude Include="Light.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="stb_image.h" />
   </ItemGroup>

@@ -33,6 +33,9 @@
     <ClCompile Include="shader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Light.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib-glfw\include\glfw3.h">
@@ -54,6 +57,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="camera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Light.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
