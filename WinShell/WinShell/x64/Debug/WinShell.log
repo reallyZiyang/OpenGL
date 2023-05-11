@@ -1,3 +1,8 @@
 ﻿  Entry.cpp
 D:\OpenGL\WinShell\WinShell\shader.h(4,10): warning C4067: 预处理器指令后有意外标记 - 应输入换行符
+D:\OpenGL\WinShell\WinShell\Entry.cpp(177,29): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+D:\OpenGL\WinShell\WinShell\Entry.cpp(178,25): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+D:\OpenGL\WinShell\WinShell\Entry.cpp(319,39): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+D:\OpenGL\WinShell\WinShell\Entry.cpp(319,30): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+D:\OpenGL\WinShell\WinShell\Entry.cpp(324,28): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
   WinShell.vcxproj -> D:\OpenGL\WinShell\x64\Debug\WinShell.exe

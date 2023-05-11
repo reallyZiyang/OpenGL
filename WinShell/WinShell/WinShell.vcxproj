@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>D:\OpenGL\WinShell\lib-glfw\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>D:\OpenGL\WinShell\lib-glfw\include\KHR;D:\OpenGL\WinShell\lib-glfw\include\glad;D:\OpenGL\WinShell\lib-glfw\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\OpenGL\WinShell\lib-assimp\lib;D:\OpenGL\WinShell\lib-glfw\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\OpenGL\WinShell\lib-assimp\include;D:\OpenGL\WinShell\lib-glfw\include;D:\OpenGL\WinShell\lib-glfw\include\glad;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -112,7 +112,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
