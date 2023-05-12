@@ -22,6 +22,9 @@
     <Filter Include="源文件\textures">
       <UniqueIdentifier>{4c5f1cfd-55d4-4fd3-955e-11af9179340d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\mesh">
+      <UniqueIdentifier>{92387c6e-57bc-4f88-b30d-bb038854e728}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -62,6 +65,12 @@
     <ClInclude Include="Light.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="mesh.h">
+      <Filter>头文件\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="model.h">
+      <Filter>头文件\mesh</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\lib-glfw\lib\glfw3.pdb">
@@ -81,6 +90,9 @@
       <Filter>源文件\shaders</Filter>
     </Text>
     <Text Include="light.fs">
+      <Filter>源文件\shaders</Filter>
+    </Text>
+    <Text Include="model.fs">
       <Filter>源文件\shaders</Filter>
     </Text>
   </ItemGroup>

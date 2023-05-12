@@ -1,10 +1,14 @@
 #include "Light.h"
 #include <sstream>
+#include <vector>
+#include "shader.h"
+
+using namespace std;
 using namespace glm;
 
-Light::Light(int shaderID, LightType type, int index)
+Light::Light(vector<Shader> shaders, LightType type, int index)
 {
-	this->shaderID = shaderID;
+	this->shaders = shaders;
 	this->type = type;
 	this->index = index;
 }
@@ -29,8 +33,13 @@ void Light::setFloat(const std::string& name, float value) const
 		break;
 	}
 	uniformName = uniformName.append(name);
-	int location = glGetUniformLocation(shaderID, uniformName.c_str());
-	glUniform1f(location, value);
+	for (size_t i = 0; i < shaders.size(); i++)
+	{
+		Shader s = shaders[i];
+		s.use();
+		int location = glGetUniformLocation(s.ID, uniformName.c_str());
+		glUniform1f(location, value);
+	}
 }
 
 void Light::setVec3(const std::string& name, vec3 value) const
@@ -53,6 +62,11 @@ void Light::setVec3(const std::string& name, vec3 value) const
 		break;
 	}
 	uniformName = uniformName.append(name);
-	int location = glGetUniformLocation(shaderID, uniformName.c_str());
-	glUniform3f(location, value.x, value.y, value.z);
+	for (size_t i = 0; i < shaders.size(); i++)
+	{
+		Shader s = shaders[i];
+		s.use();
+		int location = glGetUniformLocation(s.ID, uniformName.c_str());
+		glUniform3f(location, value.x, value.y, value.z);
+	}
 }

@@ -10,6 +10,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "camera.h"
 #include "Light.h"
+#include "model.h"
 
 using namespace std;
 using namespace glm;
@@ -26,6 +27,7 @@ float deltaTime;
 float lastTime;
 bool firstEnter = true;
 double mouseX, mouseY;
+bool spotOn;
 
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
 void mouseInputCallback(GLFWwindow* window, double x, double y);
@@ -133,6 +135,8 @@ int main()
 
 	Shader objShader("shader.vs", "shader.fs");
 	Shader lightShader("shader.vs", "light.fs");
+	Shader modelShader("shader.vs", "model.fs");
+	Model nanosuitModel("model/nanosuit/nanosuit.obj");
 
 	//开启深度测试
 	glEnable(GL_DEPTH_TEST);
@@ -146,23 +150,18 @@ int main()
 	unsigned int diffuseMap = loadTexture("container2.png");
 	unsigned int specularMap = loadTexture("container2_specular.png");
 
-	objShader.use();
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, diffuseMap);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, specularMap);
-	objShader.setInt("material.diffuseTexture", 0);
-	objShader.setInt("material.specularTexture", 1);
-
-	Light dirLight(objShader.ID, DIRECTION_LIGHT);
+	vector<Shader> shaders;
+	shaders.push_back(objShader);
+	shaders.push_back(modelShader);
+	Light dirLight(shaders, DIRECTION_LIGHT);
 	Light pointLight[4] =
 	{
-		{Light(objShader.ID, POINT_LIGHT, 0)},
-		{Light(objShader.ID, POINT_LIGHT, 1)},
-		{Light(objShader.ID, POINT_LIGHT, 2)},
-		{Light(objShader.ID, POINT_LIGHT, 3)},
+		{Light(shaders, POINT_LIGHT, 0)},
+		{Light(shaders, POINT_LIGHT, 1)},
+		{Light(shaders, POINT_LIGHT, 2)},
+		{Light(shaders, POINT_LIGHT, 3)},
 	};
-	Light spotLight(objShader.ID, SPOT_LIGHT);
+	Light spotLight(shaders, SPOT_LIGHT);
 
 	glm::vec3 pointLightPositions[] = {
 	glm::vec3(2.0f,  3.0f,  2.0f),
@@ -170,6 +169,7 @@ int main()
 	glm::vec3(2.0f,  -3.0f, 2.0f),
 	glm::vec3(-2.0f,  3.0f, -2.0f)
 	};
+
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -188,10 +188,18 @@ int main()
 		objShader.setMat4("projection", 1, false, projection);
 		objShader.setMat4("view", 1, false, camera.GetViewMatrix());
 
+		modelShader.use();
+		modelShader.setMat4("projection", 1, false, projection);
+		modelShader.setMat4("view", 1, false, camera.GetViewMatrix());
+		mat4 model;
+		model = translate(model, vec3(0, 0, 1));
+		model = scale(model, vec3(0.25f));
+		modelShader.setMat4("model", 1, false, model);
+
 		for (size_t i = 0; i < 4; i++)
 		{
 			objShader.use();
-			float radius = 3.0f;
+			float radius = i % 2 == 1 ? 3.0f : 1.5f;
 			vec3 pos = pointLightPositions[i] + vec3(sin(glfwGetTime()) * radius, i % 2 == 0 ? sin(glfwGetTime()) * radius : cos(glfwGetTime()) * radius, cos(glfwGetTime()) * radius);
 			pointLight[i].setVec3("pos", pos);
 			pointLight[i].setVec3("color", vec3(1.0));
@@ -210,31 +218,32 @@ int main()
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
-		objShader.use();
-		objShader.setVec3("material.baseColor", vec3(1.0, 1.0, 1.0));
-		objShader.setVec3("material.diffuseColor", vec3(0.4, 0.5, 0.4));
-		objShader.setFloat("material.shininess", 64);
-
 		dirLight.setVec3("dir", vec3(0.5, 0.0, 0.0));
-		dirLight.setVec3("color", vec3(1.0, 1.0, 1.0));
+		dirLight.setVec3("color", vec3(1.0));
 		dirLight.setFloat("ambientStrength", 0.05f);
 		dirLight.setFloat("diffuseStrength", 0.1f);
 		dirLight.setFloat("specularStrength", 0.5f);
 
 		spotLight.setVec3("pos", camera.Position);
 		spotLight.setVec3("dir", camera.Front);
-		spotLight.setVec3("color", vec3(1.0, 1.0, 1.0));
+		spotLight.setVec3("color", spotOn ? vec3(1.0, 1.0, 1.0) : vec3(0.0));
 		spotLight.setFloat("insideCutoff", cos(radians(15.0f)));
 		spotLight.setFloat("outsideCutoff", cos(radians(20.0f)));
 		spotLight.setFloat("diffuseStrength", 3.0f);
 		spotLight.setFloat("specularStrength", 6.0f);
 
-		//objShader.setVec3("light.color", vec3(1.0, 1.0, 1.0));
-		//objShader.setFloat("light.ambientStrength", 0.1f);
-		//objShader.setFloat("light.diffuseStrength", 1.0f);
-		//objShader.setFloat("light.specularStrength", 3.0f);
+		objShader.use();
+		objShader.setVec3("material.baseColor", vec3(1.0, 1.0, 1.0));
+		objShader.setVec3("material.diffuseColor", vec3(0.4, 0.5, 0.4));
+		objShader.setFloat("material.shininess", 64);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, diffuseMap);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, specularMap);
+		objShader.setInt("material.diffuseTexture", 0);
+		objShader.setInt("material.specularTexture", 1);
 
-		mat4 model;
+		model = mat4();
 		model = translate(model, vec3(0, -1.5, 0));
 		model = rotate(model, radians(30.0f), vec3(1.0f, 1.0f, 1.0f));
 		model = scale(model, vec3(6.0f, 0.1f, 6.0f));
@@ -280,6 +289,11 @@ int main()
 		objShader.setMat4("model", 1, false, model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
+		modelShader.use();
+		modelShader.setVec3("material.baseColor", vec3(1.0, 1.0, 1.0));
+		modelShader.setFloat("material.shininess", 256);
+		modelShader.setVec3("viewPos", camera.Position);
+		nanosuitModel.draw(modelShader);
 
 		//交换缓冲区，检查事件
 		glfwSwapBuffers(window);
@@ -366,7 +380,14 @@ void processInput(GLFWwindow* window)
 	{
 		camera.ProcessKeyboard(WORLD_DOWN, deltaTime);
 	}
-
+	if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
+	{
+		spotOn = true;
+	}
+	else if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
+	{
+		spotOn = false;
+	}
 }
 
 unsigned int loadTexture(char const* path)
