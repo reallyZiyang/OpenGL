@@ -95,6 +95,9 @@
     <Text Include="model.fs">
       <Filter>源文件\shaders</Filter>
     </Text>
+    <Text Include="outline.fs">
+      <Filter>源文件\shaders</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <Image Include="container.jpg">

@@ -136,6 +136,7 @@ int main()
 	Shader objShader("shader.vs", "shader.fs");
 	Shader lightShader("shader.vs", "light.fs");
 	Shader modelShader("shader.vs", "model.fs");
+	Shader outlineShader("shader.vs", "outline.fs");
 	Model nanosuitModel("model/nanosuit/nanosuit.obj");
 
 	//开启深度测试
@@ -178,15 +179,25 @@ int main()
 		//输入
 		processInput(window);
 
+		glEnable(GL_STENCIL_TEST);
+		glEnable(GL_DEPTH_TEST);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
 		//渲染
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+		glStencilMask(0x00);
 
 		objShader.use();
 		mat4 projection;
 		projection = perspective(radians(camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
 		objShader.setMat4("projection", 1, false, projection);
 		objShader.setMat4("view", 1, false, camera.GetViewMatrix());
+
+		outlineShader.use();
+		outlineShader.setMat4("projection", 1, false, projection);
+		outlineShader.setMat4("view", 1, false, camera.GetViewMatrix());
 
 		modelShader.use();
 		modelShader.setMat4("projection", 1, false, projection);
@@ -293,7 +304,30 @@ int main()
 		modelShader.setVec3("material.baseColor", vec3(1.0, 1.0, 1.0));
 		modelShader.setFloat("material.shininess", 256);
 		modelShader.setVec3("viewPos", camera.Position);
+
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glStencilMask(0xFF);
+
+		modelShader.use();
+		model = mat4();
+		model = translate(model, vec3(0, 0, 1));
+		model = scale(model, vec3(0.25f));
+		modelShader.setMat4("model", 1, false, model);
 		nanosuitModel.draw(modelShader);
+
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		glStencilMask(0x00);
+		glDisable(GL_DEPTH_TEST);
+
+		outlineShader.use();
+		model = mat4();
+		model = translate(model, vec3(0, 0, 1));
+		model = scale(model, vec3(0.255f));
+		outlineShader.setMat4("model", 1, false, model);
+		nanosuitModel.draw(outlineShader);
+
+		glStencilMask(0xFF);
+		glEnable(GL_DEPTH_TEST);
 
 		//交换缓冲区，检查事件
 		glfwSwapBuffers(window);
