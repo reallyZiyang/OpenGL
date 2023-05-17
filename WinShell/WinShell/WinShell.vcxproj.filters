@@ -98,6 +98,12 @@
     <Text Include="outline.fs">
       <Filter>源文件\shaders</Filter>
     </Text>
+    <Text Include="grass.fs">
+      <Filter>源文件\shaders</Filter>
+    </Text>
+    <Text Include="grass.vs">
+      <Filter>源文件\shaders</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <Image Include="container.jpg">
@@ -110,6 +116,12 @@
       <Filter>源文件\textures</Filter>
     </Image>
     <Image Include="container2_specular.png">
+      <Filter>源文件\textures</Filter>
+    </Image>
+    <Image Include="blending_transparent_window.png">
+      <Filter>源文件\textures</Filter>
+    </Image>
+    <Image Include="grass.png">
       <Filter>源文件\textures</Filter>
     </Image>
   </ItemGroup>

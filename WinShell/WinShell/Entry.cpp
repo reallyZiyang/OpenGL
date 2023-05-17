@@ -133,6 +133,31 @@ int main()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)0);
 	glEnableVertexAttribArray(0);
 
+	float planeVertices[] = {
+		// positions          // texture Coords 
+		 5.0f, -0.5f,  5.0f,  1.0f, 0.0f,
+		-5.0f, -0.5f,  5.0f,  0.0f, 0.0f,
+		-5.0f, -0.5f, -5.0f,  0.0f, 1.0f,
+
+		 5.0f, -0.5f,  5.0f,  1.0f, 0.0f,
+		-5.0f, -0.5f, -5.0f,  0.0f, 1.0f,
+		 5.0f, -0.5f, -5.0f,  1.0f, 1.0f
+	};
+	unsigned int grassVAO, grassVBO;
+	glGenVertexArrays(1, &grassVAO);
+	glBindVertexArray(grassVAO);
+	
+	glGenBuffers(1, &grassVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, grassVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)(sizeof(float) * 3));
+	glEnableVertexAttribArray(1);
+	
+	Shader grassShader("grass.vs", "grass.fs");
+
+
 	Shader objShader("shader.vs", "shader.fs");
 	Shader lightShader("shader.vs", "light.fs");
 	Shader modelShader("shader.vs", "model.fs");
@@ -150,6 +175,7 @@ int main()
 
 	unsigned int diffuseMap = loadTexture("container2.png");
 	unsigned int specularMap = loadTexture("container2_specular.png");
+	unsigned int grassMap = loadTexture("blending_transparent_window.png");
 
 	vector<Shader> shaders;
 	shaders.push_back(objShader);
@@ -179,6 +205,8 @@ int main()
 		//输入
 		processInput(window);
 
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_STENCIL_TEST);
 		glEnable(GL_DEPTH_TEST);
 		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
@@ -194,6 +222,10 @@ int main()
 		projection = perspective(radians(camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
 		objShader.setMat4("projection", 1, false, projection);
 		objShader.setMat4("view", 1, false, camera.GetViewMatrix());
+
+		grassShader.use();
+		grassShader.setMat4("projection", 1, false, projection);
+		grassShader.setMat4("view", 1, false, camera.GetViewMatrix());
 
 		outlineShader.use();
 		outlineShader.setMat4("projection", 1, false, projection);
@@ -317,7 +349,7 @@ int main()
 
 		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 		glStencilMask(0x00);
-		glDisable(GL_DEPTH_TEST);
+		//glDisable(GL_DEPTH_TEST);
 
 		outlineShader.use();
 		model = mat4();
@@ -328,6 +360,39 @@ int main()
 
 		glStencilMask(0xFF);
 		glEnable(GL_DEPTH_TEST);
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+
+		glBindVertexArray(grassVAO);
+		grassShader.use();
+		model = mat4();
+		model = translate(model, vec3(-1.5, 2.0, 2.0));
+		model = rotate(model, radians(-90.0f), vec3(1.0f, 0.0f, 0.0f));
+		model = scale(model, vec3(0.25f));
+		grassShader.setMat4("model", 1, false, model);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, grassMap);
+		grassShader.setInt("baseTexture", 0);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		model = mat4();
+		model = translate(model, vec3(1.5, 2.0, 2.0));
+		model = rotate(model, radians(-90.0f), vec3(1.0f, 0.0f, 0.0f));
+		model = scale(model, vec3(0.25f));
+		grassShader.setMat4("model", 1, false, model);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, grassMap);
+		grassShader.setInt("baseTexture", 0);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		model = mat4();
+		model = translate(model, vec3(0, 2.0, 5.0));
+		model = rotate(model, radians(-90.0f), vec3(1.0f, 0.0f, 0.0f));
+		model = scale(model, vec3(0.25f));
+		grassShader.setMat4("model", 1, false, model);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, grassMap);
+		grassShader.setInt("baseTexture", 0);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		//交换缓冲区，检查事件
 		glfwSwapBuffers(window);
@@ -444,8 +509,8 @@ unsigned int loadTexture(char const* path)
 		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}

@@ -157,6 +157,8 @@
     <None Include="shader.vs" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="grass.fs" />
+    <Text Include="grass.vs" />
     <Text Include="light.fs" />
     <Text Include="model.fs" />
     <Text Include="outline.fs" />
@@ -164,9 +166,11 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="awesomeface.png" />
+    <Image Include="blending_transparent_window.png" />
     <Image Include="container.jpg" />
     <Image Include="container2.png" />
     <Image Include="container2_specular.png" />
+    <Image Include="grass.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
