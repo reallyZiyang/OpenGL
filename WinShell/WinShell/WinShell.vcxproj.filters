@@ -104,6 +104,12 @@
     <Text Include="grass.vs">
       <Filter>源文件\shaders</Filter>
     </Text>
+    <Text Include="rendertexture.vs">
+      <Filter>源文件\shaders</Filter>
+    </Text>
+    <Text Include="rendertexture.fs">
+      <Filter>源文件\shaders</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <Image Include="container.jpg">

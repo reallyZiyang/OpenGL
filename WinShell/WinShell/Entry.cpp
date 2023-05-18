@@ -162,6 +162,7 @@ int main()
 	Shader lightShader("shader.vs", "light.fs");
 	Shader modelShader("shader.vs", "model.fs");
 	Shader outlineShader("shader.vs", "outline.fs");
+	Shader rendertextureShader("rendertexture.vs", "rendertexture.fs");
 	Model nanosuitModel("model/nanosuit/nanosuit.obj");
 
 	//开启深度测试
@@ -197,6 +198,58 @@ int main()
 	glm::vec3(-2.0f,  3.0f, -2.0f)
 	};
 
+	float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+		// positions   // texCoords
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		-1.0f, -1.0f,  0.0f, 0.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+		 1.0f,  1.0f,  1.0f, 1.0f
+	};
+
+	unsigned int quadVAO, quadVBO;
+	glGenVertexArrays(1, &quadVAO);
+	glBindVertexArray(quadVAO);
+
+	glGenBuffers(1, &quadVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+	unsigned int frameBuffer;
+	glGenFramebuffers(1, &frameBuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+
+	unsigned int texColorBuffer;
+	glGenTextures(1, &texColorBuffer);
+	glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+	//数据传null来创建一张空纹理
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	//将纹理附加到帧缓冲对象中，该纹理只存储颜色信息
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
+
+	unsigned int rbo;
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	//创建渲染缓冲来存储深度和模板信息
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	//将渲染缓冲附加到帧缓冲对象中，渲染缓冲只存储深度和模板信息
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -205,6 +258,9 @@ int main()
 		//输入
 		processInput(window);
 
+		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+
+		//glEnable(GL_CULL_FACE);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_STENCIL_TEST);
@@ -212,11 +268,12 @@ int main()
 		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 		//渲染
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		glStencilMask(0x00);
 
+		
 		objShader.use();
 		mat4 projection;
 		projection = perspective(radians(camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
@@ -392,6 +449,19 @@ int main()
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, grassMap);
 		grassShader.setInt("baseTexture", 0);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_STENCIL_TEST);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		//glLineWidth(5.0f);
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		rendertextureShader.use();
+		glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+		glBindVertexArray(quadVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		//交换缓冲区，检查事件

@@ -162,6 +162,8 @@
     <Text Include="light.fs" />
     <Text Include="model.fs" />
     <Text Include="outline.fs" />
+    <Text Include="rendertexture.fs" />
+    <Text Include="rendertexture.vs" />
     <Text Include="shader.fs" />
   </ItemGroup>
   <ItemGroup>
