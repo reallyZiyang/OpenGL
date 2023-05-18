@@ -29,6 +29,7 @@ bool firstEnter = true;
 double mouseX, mouseY;
 bool spotOn;
 
+unsigned int loadCubemapTexture(vector<string> faces);
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
 void mouseInputCallback(GLFWwindow* window, double x, double y);
 void scrollInputCallback(GLFWwindow* window, double x, double y);
@@ -224,7 +225,7 @@ int main()
 	unsigned int frameBuffer;
 	glGenFramebuffers(1, &frameBuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-
+	
 	unsigned int texColorBuffer;
 	glGenTextures(1, &texColorBuffer);
 	glBindTexture(GL_TEXTURE_2D, texColorBuffer);
@@ -233,23 +234,93 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(GL_TEXTURE_2D, 0);
-
+	
 	//将纹理附加到帧缓冲对象中，该纹理只存储颜色信息
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
-
+	
 	unsigned int rbo;
 	glGenRenderbuffers(1, &rbo);
 	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
 	//创建渲染缓冲来存储深度和模板信息
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
+	
 	//将渲染缓冲附加到帧缓冲对象中，渲染缓冲只存储深度和模板信息
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-
+	
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+	float skyboxVertices[] = {
+		// positions          
+		-1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		-1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f
+	};
+
+	vector<std::string> faces
+	{
+		"skybox/right.jpg",
+		"skybox/left.jpg",
+		"skybox/top.jpg",
+		"skybox/bottom.jpg",
+		"skybox/front.jpg",
+		"skybox/back.jpg"
+	};
+	unsigned int cubemapTexture = loadCubemapTexture(faces);
+
+	unsigned int skyVAO, skyVBO;
+	glGenVertexArrays(1, &skyVAO);
+	glBindVertexArray(skyVAO);
+
+	glGenBuffers(1, &skyVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, skyVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+	Shader skyShader("cubemap.vs", "cubemap.fs");
+	Shader reflectShader("shader.vs", "reflect.fs");
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -271,15 +342,15 @@ int main()
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		glStencilMask(0x00);
-
-		
-		objShader.use();
 		mat4 projection;
 		projection = perspective(radians(camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
+
+		glStencilMask(0x00);
+
+		objShader.use();
 		objShader.setMat4("projection", 1, false, projection);
 		objShader.setMat4("view", 1, false, camera.GetViewMatrix());
-
+		
 		grassShader.use();
 		grassShader.setMat4("projection", 1, false, projection);
 		grassShader.setMat4("view", 1, false, camera.GetViewMatrix());
@@ -389,6 +460,18 @@ int main()
 		objShader.setMat4("model", 1, false, model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
+		reflectShader.use();
+		reflectShader.setMat4("projection", 1, false, projection);
+		reflectShader.setMat4("view", 1, false, camera.GetViewMatrix());
+		reflectShader.setVec3("viewPos", camera.Position);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+		reflectShader.setInt("skybox", 0);
+		model = mat4();
+		model = translate(model, vec3(0, 2, 7));
+		reflectShader.setMat4("model", 1, false, model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
 		modelShader.use();
 		modelShader.setVec3("material.baseColor", vec3(1.0, 1.0, 1.0));
 		modelShader.setFloat("material.shininess", 256);
@@ -450,6 +533,19 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, grassMap);
 		grassShader.setInt("baseTexture", 0);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		//glDepthMask(GL_FALSE);
+		glDepthFunc(GL_LEQUAL);//天空盒深度值永远为1，1是最远的深度，equal使得空白的地方才能通过深度测试
+		skyShader.use();
+		skyShader.setMat4("projection", 1, false, projection);
+		//转成3维矩阵丢失位移信息，再转回4维矩阵，天空盒以0为原点不需要位移
+		skyShader.setMat4("view", 1, false, mat4(mat3(camera.GetViewMatrix())));
+		skyShader.setInt("skybox", 0);
+		glBindVertexArray(skyVAO);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDepthFunc(GL_LESS);
+		//glDepthMask(GL_TRUE);
 
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_STENCIL_TEST);
@@ -589,6 +685,39 @@ unsigned int loadTexture(char const* path)
 		std::cout << "Texture failed to load at path: " << path << std::endl;
 	}
 	stbi_image_free(data);
+
+	return textureID;
+}
+
+
+unsigned int loadCubemapTexture(vector<string> faces)
+{
+	unsigned int textureID;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+	int width, height, channel;
+	for (size_t i = 0; i < faces.size(); i++)
+	{
+		string path = faces[i];
+		unsigned char* data = stbi_load(path.c_str(), &width, &height, &channel, 0);
+		if (data)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			glGenerateMipmap(GL_TEXTURE_2D);
+		}
+		else
+		{
+			std::cout << "Texture failed to load at path: " << path << std::endl;
+		}
+		stbi_image_free(data);
+	}
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	return textureID;
 }

@@ -110,6 +110,15 @@
     <Text Include="rendertexture.fs">
       <Filter>源文件\shaders</Filter>
     </Text>
+    <Text Include="cubemap.vs">
+      <Filter>源文件\shaders</Filter>
+    </Text>
+    <Text Include="cubemap.fs">
+      <Filter>源文件\shaders</Filter>
+    </Text>
+    <Text Include="reflect.fs">
+      <Filter>源文件\shaders</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <Image Include="container.jpg">
@@ -128,6 +137,24 @@
       <Filter>源文件\textures</Filter>
     </Image>
     <Image Include="grass.png">
+      <Filter>源文件\textures</Filter>
+    </Image>
+    <Image Include="skybox\back.jpg">
+      <Filter>源文件\textures</Filter>
+    </Image>
+    <Image Include="skybox\bottom.jpg">
+      <Filter>源文件\textures</Filter>
+    </Image>
+    <Image Include="skybox\front.jpg">
+      <Filter>源文件\textures</Filter>
+    </Image>
+    <Image Include="skybox\left.jpg">
+      <Filter>源文件\textures</Filter>
+    </Image>
+    <Image Include="skybox\right.jpg">
+      <Filter>源文件\textures</Filter>
+    </Image>
+    <Image Include="skybox\top.jpg">
       <Filter>源文件\textures</Filter>
     </Image>
   </ItemGroup>

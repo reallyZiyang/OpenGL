@@ -157,11 +157,14 @@
     <None Include="shader.vs" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="cubemap.fs" />
+    <Text Include="cubemap.vs" />
     <Text Include="grass.fs" />
     <Text Include="grass.vs" />
     <Text Include="light.fs" />
     <Text Include="model.fs" />
     <Text Include="outline.fs" />
+    <Text Include="reflect.fs" />
     <Text Include="rendertexture.fs" />
     <Text Include="rendertexture.vs" />
     <Text Include="shader.fs" />
@@ -173,6 +176,12 @@
     <Image Include="container2.png" />
     <Image Include="container2_specular.png" />
     <Image Include="grass.png" />
+    <Image Include="skybox\back.jpg" />
+    <Image Include="skybox\bottom.jpg" />
+    <Image Include="skybox\front.jpg" />
+    <Image Include="skybox\left.jpg" />
+    <Image Include="skybox\right.jpg" />
+    <Image Include="skybox\top.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
