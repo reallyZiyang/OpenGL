@@ -3,13 +3,16 @@ layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec3 normal;
 layout(location = 2) in vec2 texCoord;
 
+layout (std140) uniform Matrices
+{
+    uniform mat4 view;
+    uniform mat4 projection;
+};
 out vec3 fragmentPos;
 out vec3 fragmentNormal;
 out vec2 fragmentTexCoord;
 
 uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
 
 void main()
 {

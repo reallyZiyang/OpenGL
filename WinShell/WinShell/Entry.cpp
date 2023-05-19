@@ -321,6 +321,30 @@ int main()
 
 	Shader skyShader("cubemap.vs", "cubemap.fs");
 	Shader reflectShader("shader.vs", "reflect.fs");
+	
+	unsigned int reflectUniformBlockIndex = glGetUniformBlockIndex(reflectShader.ID, "Matrices");
+	unsigned int grassUniformBlockIndex = glGetUniformBlockIndex(grassShader.ID, "Matrices");
+	unsigned int objUniformBlockIndex = glGetUniformBlockIndex(objShader.ID, "Matrices");
+	unsigned int lightUniformBlockIndex = glGetUniformBlockIndex(lightShader.ID, "Matrices");
+	unsigned int modelUniformBlockIndex = glGetUniformBlockIndex(modelShader.ID, "Matrices");
+	unsigned int outlineUniformBlockIndex = glGetUniformBlockIndex(outlineShader.ID, "Matrices");
+	unsigned int rendertextureUniformBlockIndex = glGetUniformBlockIndex(rendertextureShader.ID, "Matrices");
+
+	glUniformBlockBinding(reflectShader.ID, reflectUniformBlockIndex, 0);
+	glUniformBlockBinding(grassShader.ID, grassUniformBlockIndex, 0);
+	glUniformBlockBinding(objShader.ID, objUniformBlockIndex, 0);
+	glUniformBlockBinding(lightShader.ID, lightUniformBlockIndex, 0);
+	glUniformBlockBinding(modelShader.ID, modelUniformBlockIndex, 0);
+	glUniformBlockBinding(outlineShader.ID, outlineUniformBlockIndex, 0);
+	glUniformBlockBinding(rendertextureUniformBlockIndex, rendertextureShader.ID, 0);
+
+	unsigned int uboMatrices;
+	glGenBuffers(1, &uboMatrices);
+	glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
+	glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(mat4), NULL, GL_STATIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboMatrices);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -344,24 +368,13 @@ int main()
 
 		mat4 projection;
 		projection = perspective(radians(camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
+		mat4 view = camera.GetViewMatrix();
+		glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(mat4), value_ptr(view));
+		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(mat4), sizeof(mat4), value_ptr(projection));
 
 		glStencilMask(0x00);
 
-		objShader.use();
-		objShader.setMat4("projection", 1, false, projection);
-		objShader.setMat4("view", 1, false, camera.GetViewMatrix());
-		
-		grassShader.use();
-		grassShader.setMat4("projection", 1, false, projection);
-		grassShader.setMat4("view", 1, false, camera.GetViewMatrix());
-
-		outlineShader.use();
-		outlineShader.setMat4("projection", 1, false, projection);
-		outlineShader.setMat4("view", 1, false, camera.GetViewMatrix());
-
-		modelShader.use();
-		modelShader.setMat4("projection", 1, false, projection);
-		modelShader.setMat4("view", 1, false, camera.GetViewMatrix());
 		mat4 model;
 		model = translate(model, vec3(0, 0, 1));
 		model = scale(model, vec3(0.25f));
@@ -378,8 +391,6 @@ int main()
 			pointLight[i].setFloat("specularStrength", 2.0f);
 
 			lightShader.use();
-			lightShader.setMat4("projection", 1, false, projection);
-			lightShader.setMat4("view", 1, false, camera.GetViewMatrix());
 			mat4 lightModel;
 			lightModel = translate(lightModel, pos);
 			lightModel = scale(lightModel, vec3(0.2f));
@@ -461,8 +472,6 @@ int main()
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		reflectShader.use();
-		reflectShader.setMat4("projection", 1, false, projection);
-		reflectShader.setMat4("view", 1, false, camera.GetViewMatrix());
 		reflectShader.setVec3("viewPos", camera.Position);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
@@ -497,6 +506,19 @@ int main()
 		model = scale(model, vec3(0.255f));
 		outlineShader.setMat4("model", 1, false, model);
 		nanosuitModel.draw(outlineShader);
+
+		//glDepthMask(GL_FALSE);
+		glDepthFunc(GL_LEQUAL);//天空盒深度值永远为1，1是最远的深度，equal使得空白的地方才能通过深度测试
+		skyShader.use();
+		skyShader.setMat4("projection", 1, false, projection);
+		//转成3维矩阵丢失位移信息，再转回4维矩阵，天空盒以0为原点不需要位移
+		skyShader.setMat4("view", 1, false, mat4(mat3(camera.GetViewMatrix())));
+		skyShader.setInt("skybox", 0);
+		glBindVertexArray(skyVAO);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDepthFunc(GL_LESS);
+		//glDepthMask(GL_TRUE);
 
 		glStencilMask(0xFF);
 		glEnable(GL_DEPTH_TEST);
@@ -534,18 +556,6 @@ int main()
 		grassShader.setInt("baseTexture", 0);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
-		//glDepthMask(GL_FALSE);
-		glDepthFunc(GL_LEQUAL);//天空盒深度值永远为1，1是最远的深度，equal使得空白的地方才能通过深度测试
-		skyShader.use();
-		skyShader.setMat4("projection", 1, false, projection);
-		//转成3维矩阵丢失位移信息，再转回4维矩阵，天空盒以0为原点不需要位移
-		skyShader.setMat4("view", 1, false, mat4(mat3(camera.GetViewMatrix())));
-		skyShader.setInt("skybox", 0);
-		glBindVertexArray(skyVAO);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glDepthFunc(GL_LESS);
-		//glDepthMask(GL_TRUE);
 
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_STENCIL_TEST);
