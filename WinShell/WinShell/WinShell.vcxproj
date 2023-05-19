@@ -154,15 +154,23 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\lib-glfw\lib\glfw3.pdb" />
+    <None Include="model_normal_display.gs" />
     <None Include="shader.vs" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="cubemap.fs" />
     <Text Include="cubemap.vs" />
+    <Text Include="explode_model.vs" />
+    <Text Include="geometry.fs" />
+    <Text Include="geometry.gs" />
+    <Text Include="geometry.vs" />
     <Text Include="grass.fs" />
     <Text Include="grass.vs" />
     <Text Include="light.fs" />
     <Text Include="model.fs" />
+    <Text Include="model_explode.gs" />
+    <Text Include="model_normal_display.fs" />
+    <Text Include="model_normal_display.vs" />
     <Text Include="outline.fs" />
     <Text Include="reflect.fs" />
     <Text Include="rendertexture.fs" />

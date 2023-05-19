@@ -1,7 +1,7 @@
 #include "shader.h"
 using namespace glm;
 
-Shader::Shader(const char* vertexPath, const char* fragmentPath)
+Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath)
 {
     // 1. retrieve the vertex/fragment source code from filePath
     std::string vertexCode;
@@ -11,6 +11,9 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
     // ensure ifstream objects can throw exceptions:
     vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    std::string geometryCode;
+    std::ifstream gShaderFile;
+    gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
     {
         // open files
@@ -26,6 +29,16 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
         // convert stream into string
         vertexCode = vShaderStream.str();
         fragmentCode = fShaderStream.str();
+
+        if (geometryPath)
+        {
+            gShaderFile.open(geometryPath);
+            std::stringstream gShaderStream;
+            gShaderStream << gShaderFile.rdbuf();
+            gShaderFile.close();
+            geometryCode = gShaderStream.str();
+        }
+
     }
     catch (std::ifstream::failure& e)
     {
@@ -40,6 +53,16 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
     glCompileShader(vertexShader);
     checkCompileError(vertexShader, "VERTEX");
 
+    unsigned int geometryShader = 0;
+    if (geometryPath)
+    {
+        const char* gShaderCode = geometryCode.c_str();
+        geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
+        glShaderSource(geometryShader, 1, &gShaderCode, NULL);
+        glCompileShader(geometryShader);
+        checkCompileError(geometryShader, "GEOMETRY");
+    }
+
     //创建，设置源码，编译片段着色器
     unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fShaderCode, NULL);
@@ -50,6 +73,8 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
     ID = glCreateProgram();
     glAttachShader(ID, vertexShader);
     glAttachShader(ID, fragmentShader);
+    if (geometryPath)
+        glAttachShader(ID, geometryShader);
     glLinkProgram(ID);
     checkCompileError(ID, "PROGRAM");
 
