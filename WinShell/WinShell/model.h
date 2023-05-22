@@ -15,6 +15,7 @@ using namespace Assimp;
 class Model
 {
 public:
+	vector<Mesh> meshes;
 	Model(string path)
 	{
 		Importer importer;
@@ -28,16 +29,15 @@ public:
 		directory = path.substr(0, path.find_last_of("/"));
 		processNode(scene->mRootNode, scene);
 	}
-	void draw(const Shader& shader)
+	void draw(const Shader& shader, unsigned int instanceCount = 0)
 	{
 		for (size_t i = 0; i < meshes.size(); i++)
 		{
-			meshes[i].draw(shader);
+			meshes[i].draw(shader, instanceCount);
 		}
 	}
 private:
 	map<string, Texture> cachedTextureMap;
-	vector<Mesh> meshes;
 	string directory;
 	void processNode(const aiNode* aNode, const aiScene* scene)
 	{

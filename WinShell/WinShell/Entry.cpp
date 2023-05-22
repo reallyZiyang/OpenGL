@@ -34,8 +34,9 @@ void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
 void mouseInputCallback(GLFWwindow* window, double x, double y);
 void scrollInputCallback(GLFWwindow* window, double x, double y);
 void processInput(GLFWwindow* window);
-void draw1(GLFWwindow* window);
-void draw2(GLFWwindow* window);
+void draw1(GLFWwindow* window);//模型 光照等
+void draw2(GLFWwindow* window);//几何着色器
+void draw3(GLFWwindow* window);//gpu instancing
 unsigned int loadTexture(char const* path);
 
 int main()
@@ -67,8 +68,9 @@ int main()
 	//注册窗口大小改变时的回调
 	glfwSetFramebufferSizeCallback(window, frameBufferSizeCallback);
 
-	draw1(window);
+	//draw1(window);
 	//draw2(window);
+	draw3(window);
 
 	glfwTerminate();
 	return 0;
@@ -781,6 +783,100 @@ void draw2(GLFWwindow* window)
 		geometryShader.use();
 		glBindVertexArray(gVAO);
 		glDrawArrays(GL_POINTS, 0, 4);
+
+		//交换缓冲区，检查事件
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+}
+
+void draw3(GLFWwindow* window)
+{
+	//开启深度测试
+	glEnable(GL_DEPTH_TEST);
+
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//鼠标移动回调
+	glfwSetCursorPosCallback(window, mouseInputCallback);
+	//滚轮回调
+	glfwSetScrollCallback(window, scrollInputCallback);
+
+	Shader shader("instance.vs", "instance.fs");
+	shader.use();
+	//Model planet("model/planet/planet.obj");
+	Model rock("model/rock/rock.obj");
+
+#define ROCK_COUNT 10000
+
+	mat4 modelMatrices[ROCK_COUNT];
+	float radius = 30;
+	float offset = 4;
+	for (unsigned int i = 0; i < ROCK_COUNT; i++)
+	{
+		mat4 model;
+		float angle = (float)i / ROCK_COUNT * 360.0f;
+		float displacement = (rand() % (int)offset * 100) / 100.0f - offset;
+		float x = sin(angle) * radius + displacement;
+		displacement = (rand() % (int)offset * 100) / 100.0f - offset;
+		float y = sin(angle) * radius / 3 + displacement;
+		displacement = (rand() % (int)offset * 100) / 100.0f - offset;
+		float z = cos(angle) * radius + displacement;
+		model = translate(model, vec3(x, y, z));
+		float s = 0.05f + rand() % 20 / 100.0f;
+		model = scale(model, vec3(s));
+		float rotateAngle = rand() % 360;
+		model = rotate(model, rotateAngle, vec3(0.4, 0.6, 0.8));
+		modelMatrices[i] = model;
+	}
+
+	camera.Position = vec3(0, 10, 40);
+
+	unsigned int mbo;
+	glGenBuffers(1, &mbo);
+	glBindBuffer(GL_ARRAY_BUFFER, mbo);
+	glBufferData(GL_ARRAY_BUFFER, ROCK_COUNT * sizeof(mat4), modelMatrices, GL_STATIC_DRAW);
+	
+	for (unsigned i = 0; i < rock.meshes.size(); i++)
+	{
+		glBindVertexArray(rock.meshes[i].VAO);
+		//顶点属性最大允许的数据大小等于一个vec4，而model是mat4，为4个vec4，所以需要启用4个属性位来组装成1个mat4
+		glEnableVertexAttribArray(3);
+		glEnableVertexAttribArray(4);
+		glEnableVertexAttribArray(5);
+		glEnableVertexAttribArray(6);
+		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(vec4), (void*)(0 * sizeof(vec4)));
+		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(vec4), (void*)(1 * sizeof(vec4)));
+		glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(vec4), (void*)(2 * sizeof(vec4)));
+		glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(vec4), (void*)(3 * sizeof(vec4)));
+	
+		//每隔1个新渲染更新一组数据
+		glVertexAttribDivisor(3, 1);
+		glVertexAttribDivisor(4, 1);
+		glVertexAttribDivisor(5, 1);
+		glVertexAttribDivisor(6, 1);
+	}
+
+	while (!glfwWindowShouldClose(window))
+	{
+		deltaTime = glfwGetTime() - lastTime;
+		lastTime = glfwGetTime();
+		//输入
+		processInput(window);
+
+		glEnable(GL_DEPTH_TEST);
+
+		//渲染
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		mat4 projection;
+		projection = perspective(radians(camera.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
+		mat4 view = camera.GetViewMatrix();
+		shader.setMat4("projection", projection);
+		shader.setMat4("view", view);
+		
+		//planet.draw(shader);
+		rock.draw(shader, ROCK_COUNT);
 
 		//交换缓冲区，检查事件
 		glfwSwapBuffers(window);

@@ -154,6 +154,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\lib-glfw\lib\glfw3.pdb" />
+    <None Include="instance.fs" />
     <None Include="model_normal_display.gs" />
     <None Include="shader.vs" />
   </ItemGroup>
@@ -166,6 +167,7 @@
     <Text Include="geometry.vs" />
     <Text Include="grass.fs" />
     <Text Include="grass.vs" />
+    <Text Include="instance.vs" />
     <Text Include="light.fs" />
     <Text Include="model.fs" />
     <Text Include="model_explode.gs" />

@@ -30,6 +30,7 @@ public:
     void setColor(const std::string& name, float value[4]) const;
     void setVec3(const std::string& name, vec3 vec) const;
     void setMat4(const std::string& name, int count, bool transpose, mat4 trans) const;
+    void setMat4(const std::string& name, mat4 trans) const;
 private:
     void checkCompileError(unsigned int shader, std::string type);
 };

@@ -32,6 +32,7 @@ struct Texture
 class Mesh
 {
 public:
+	unsigned int VAO, VBO, EBO;
 	vector<Vertex> vertices;
 	vector<unsigned int> indices;
 	vector<Texture> textures;
@@ -42,7 +43,7 @@ public:
 		this->textures = textures;
 		setupMesh();
 	}
-	void draw(const Shader& shader)
+	void draw(const Shader& shader, unsigned int instanceCount)
 	{
 		int diffuseIndex = 0;
 		int specularIndex = 0;
@@ -69,11 +70,13 @@ public:
 		}
 
 		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+		if (instanceCount == 0)
+			glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+		else
+			glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, instanceCount);
 		glBindVertexArray(0);
 	}
 private:
-	unsigned int VAO, VBO, EBO;
 	void setupMesh()
 	{
 		glGenVertexArrays(1, &VAO);

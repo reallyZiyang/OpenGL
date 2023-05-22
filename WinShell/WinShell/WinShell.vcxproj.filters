@@ -82,6 +82,9 @@
     <None Include="model_normal_display.gs">
       <Filter>源文件\shaders</Filter>
     </None>
+    <None Include="instance.fs">
+      <Filter>源文件\shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\lib-glfw\lib\glfw3.lib">
@@ -141,6 +144,9 @@
       <Filter>源文件\shaders</Filter>
     </Text>
     <Text Include="model_normal_display.fs">
+      <Filter>源文件\shaders</Filter>
+    </Text>
+    <Text Include="instance.vs">
       <Filter>源文件\shaders</Filter>
     </Text>
   </ItemGroup>
