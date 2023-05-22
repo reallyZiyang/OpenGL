@@ -154,6 +154,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\lib-glfw\lib\glfw3.pdb" />
+    <None Include="base.fs" />
+    <None Include="base.vs" />
     <None Include="instance.fs" />
     <None Include="model_normal_display.gs" />
     <None Include="shader.vs" />

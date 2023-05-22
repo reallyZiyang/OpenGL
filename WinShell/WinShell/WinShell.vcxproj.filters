@@ -85,6 +85,12 @@
     <None Include="instance.fs">
       <Filter>源文件\shaders</Filter>
     </None>
+    <None Include="base.vs">
+      <Filter>源文件\shaders</Filter>
+    </None>
+    <None Include="base.fs">
+      <Filter>源文件\shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\lib-glfw\lib\glfw3.lib">

@@ -68,9 +68,10 @@ int main()
 	//注册窗口大小改变时的回调
 	glfwSetFramebufferSizeCallback(window, frameBufferSizeCallback);
 
+
 	//draw1(window);
 	//draw2(window);
-	draw3(window);
+	//draw3(window);
 
 	glfwTerminate();
 	return 0;
