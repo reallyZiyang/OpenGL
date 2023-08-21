@@ -156,9 +156,14 @@
     <None Include="..\lib-glfw\lib\glfw3.pdb" />
     <None Include="base.fs" />
     <None Include="base.vs" />
+    <None Include="depth_texture.fs" />
     <None Include="instance.fs" />
+    <None Include="lit.fs" />
+    <None Include="lit.vs" />
     <None Include="model_normal_display.gs" />
     <None Include="shader.vs" />
+    <None Include="shadow.fs" />
+    <None Include="shadow.vs" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="cubemap.fs" />

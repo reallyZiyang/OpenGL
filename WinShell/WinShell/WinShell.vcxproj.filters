@@ -91,6 +91,21 @@
     <None Include="base.fs">
       <Filter>源文件\shaders</Filter>
     </None>
+    <None Include="shadow.vs">
+      <Filter>源文件\shaders</Filter>
+    </None>
+    <None Include="lit.vs">
+      <Filter>源文件\shaders</Filter>
+    </None>
+    <None Include="lit.fs">
+      <Filter>源文件\shaders</Filter>
+    </None>
+    <None Include="shadow.fs">
+      <Filter>源文件\shaders</Filter>
+    </None>
+    <None Include="depth_texture.fs">
+      <Filter>源文件\shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\lib-glfw\lib\glfw3.lib">
